@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.js" charset="utf-8"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.js"></script>
+
+    </head>
+    <body>
+        <input type="text" name="" value="" id="input-text">
+        <div id="tree-simple" style="width:1800px; height: 1000px"> </div>
+        <script>
+            class Node {
+              constructor(leftChildNode, rightChildNode, value, freq) {
+                this.leftChildNode = leftChildNode;
+                this.rightChildNode = rightChildNode;
+                this.value = value;
+                this.freq = freq;
+                this.children = [];
+                if(leftChildNode) this.children.push(leftChildNode);
+                if(rightChildNode) this.children.push(rightChildNode);
+                this.title = value || "*";
+                this.name = freq;
+                this.text = {name: this.name, title: this.title};
+              }
+            }
+            var input = document.getElementById("input-text");
+            function handleFrequencyInput(){
+                let chars = input.value.split("");
+                if(chars.length < 1) return;
+                let freqObj = chars.reduce((accumulator, currentValue) => {
+                    if(!accumulator[currentValue]) accumulator[currentValue] = 0;
+                    accumulator[currentValue]++;
+                    return accumulator;
+                }, {});
+
+                var nodes = [];
+                for(letter in freqObj){
+                    nodes.push(new Node(null, null, letter, freqObj[letter]));
+                }
+
+                function compare(a, b) {
+                  if (a.freq < b.freq) {
+                    return -1;
+                  }
+                  if (a.freq > b.freq) {
+                    return 1;
+                  }
+                  return 0;
+                }
+
+                nodes.sort(compare);
+
+                while(nodes.length > 1){
+                    let left = nodes.shift(); // Get the lowest frequency node
+                    let right = nodes.shift(); // Get the next lowest frequency node
+                    let newNode = new Node(left, right, null, left.freq + right.freq); // Create a new node that is the sum of those two nodes
+                    nodes.push(newNode); // Add to end of list
+                    nodes.sort(compare); // Since you are using a priority queue, you shouldn't need this
+                }
+                let root = nodes[0];
+
+                let simple_chart_config = {
+                    chart: {
+                        container: "#tree-simple"
+                    },
+                    connectors: {
+                        style: {
+                            stroke: "black"
+                        }
+                    },
+                    nodeStructure: root
+                };
+                var my_chart = new Treant(simple_chart_config, function() {}, $);
+            }
+            input.oninput = handleFrequencyInput;
+        </script>
+    </body>
+</html>
